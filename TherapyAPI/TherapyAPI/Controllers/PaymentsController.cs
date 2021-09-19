@@ -10,6 +10,7 @@ using Domain.ViewModels.Request;
 using Domain.ViewModels.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Utils.SberbankAcquiring;
 using Utils.SberbankAcquiring.Models;
 using Utils.SberbankAcquiring.Models.Request;
@@ -21,6 +22,10 @@ namespace TherapyAPI.Controllers
     [Route("api/payments")]
     public class PaymentsController : Controller
     {
+        private readonly string _apiUrl;
+        private readonly SberbankService _sberbankService;
+        private readonly string _clientAppUrl;
+
         private IUserService UserService { get; set; }
         private IPaymentService PaymentService { get; set; }
         private IUserWalletService UserWalletService { get; set; }
@@ -30,17 +35,23 @@ namespace TherapyAPI.Controllers
             IUserService userService,
             IPaymentService paymentService,
             IUserWalletService userWalletService,
-            ISessionService sessionService)
+            ISessionService sessionService,
+            SberbankService sberbankService,
+            IConfiguration configuration)
         {
             UserService = userService;
             PaymentService = paymentService;
             UserWalletService = userWalletService;
             SessionService = sessionService;
+            this._sberbankService = sberbankService;
+            var endpoints = configuration.GetSection("Endpoints").Get<Endpoints>();
+            _clientAppUrl = endpoints.ClientAppUrl;
+            _apiUrl = endpoints.ApiUrl;
         }
 
         private RedirectResult RedirectResult(string redirectPath)
         {
-            return Redirect($"{AppSettings.ClientAppUrl}/{redirectPath}");
+            return Redirect($"{_clientAppUrl}/{redirectPath}");
         }
 
         [HttpPost]
@@ -75,12 +86,12 @@ namespace TherapyAPI.Controllers
 
             PaymentService.Create(payment);
 
-            var paymentRequest = new RegisterDORequest($"user#{user.ID}deposit#{payment.ID}_{DateTime.UtcNow.Millisecond}", (payment.Amount * 100));
+            var paymentRequest = new RegisterDORequest(_apiUrl, $"user#{user.ID}deposit#{payment.ID}_{DateTime.UtcNow.Millisecond}", (payment.Amount * 100));
 
             if (request.SessionID != 0)
-                paymentRequest.SetSessionID(request.SessionID);
+                paymentRequest.SetSessionID(_apiUrl, request.SessionID);
 
-            var paymentResponse = await SberbankAPI.RegisterDO(paymentRequest);
+            var paymentResponse = await _sberbankService.RegisterDO(paymentRequest);
 
             if (paymentResponse.OrderId == null)
             {

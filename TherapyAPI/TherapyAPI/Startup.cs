@@ -18,6 +18,7 @@ using TherapyAPI.BackgroundServices;
 using TherapyAPI.TokenManager;
 using TherapyAPI.TokenManager.Interfaces;
 using TherapyAPI.WebSocketManager;
+using Utils;
 
 namespace TherapyAPI
 {
@@ -26,17 +27,21 @@ namespace TherapyAPI
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            StaticConfig = configuration;
         }
 
         public IConfiguration Configuration { get; }
+        public static IConfiguration StaticConfig { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
             services.AddBuisnessServices();
+            services.AddUtilsServices();
             //services.AddNHibernate("Server=localhost;Port=3306;Uid=root;Pwd=admin;Database=therapy_db;SslMode=required;");
-            services.AddNHibernate("Server=localhost;Port=3306;Uid=admin_therapy;Pwd=ZTDA093zM8;Database=admin_therapy_db;SslMode=required;");
+            services.AddNHibernate(Configuration.GetConnectionString("AdminDatabase"));
+            //services.AddNHibernate(Configuration.GetConnectionString("RootDatabase"));
             services.AddCors();
 
             services.AddTransient<TokenManagerMiddleware>();

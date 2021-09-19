@@ -19,6 +19,8 @@ namespace TherapyAPI.Controllers
     [Route("api/auth")]
     public class AuthController : Controller
     {
+        private readonly SmscHelper _smscHelper;
+
         private IUserService UserService { get; set; }
         private ITokenManager TokenManager { get; set; }
         private IUserSessionService UserSessionService { get; set; }
@@ -32,7 +34,8 @@ namespace TherapyAPI.Controllers
             IUserSessionService userSessionService,
             IProblemService problemService,
             IUserWalletService userWalletService,
-            ISpecialistService specialistService)
+            ISpecialistService specialistService,
+            SmscHelper smscHelper)
         {
             UserService = userService;
             TokenManager = tokenManager;
@@ -40,6 +43,7 @@ namespace TherapyAPI.Controllers
             ProblemService = problemService;
             UserWalletService = userWalletService;
             SpecialistService = specialistService;
+            this._smscHelper = smscHelper;
         }
 
         ///api/auth/sign-up
@@ -87,7 +91,7 @@ namespace TherapyAPI.Controllers
             });
 
             var session = UserSessionService.CreateSession(user);
-            SmscHelper.SendSms(user.PhoneNumber, $"Код для входа: {session.AuthCode}");
+            _smscHelper.SendSms(user.PhoneNumber, $"Код для входа: {session.AuthCode}");
 
             return Ok(new SignInResponse
             {
@@ -137,7 +141,7 @@ namespace TherapyAPI.Controllers
             specialist.Description = request.Description;
 
             var session = UserSessionService.CreateSession(user);
-            SmscHelper.SendSms(user.PhoneNumber, $"Код для входа: {session.AuthCode}");
+            _smscHelper.SendSms(user.PhoneNumber, $"Код для входа: {session.AuthCode}");
 
             return Ok(new SignInResponse
             {
@@ -162,7 +166,7 @@ namespace TherapyAPI.Controllers
 
             var session = UserSessionService.CreateSession(user);
 
-            SmscHelper.SendSms(user.PhoneNumber, $"Код для входа: {session.AuthCode}");
+            _smscHelper.SendSms(user.PhoneNumber, $"Код для входа: {session.AuthCode}");
 
             return Ok(new SignInResponse
             {
@@ -229,7 +233,7 @@ namespace TherapyAPI.Controllers
             UserSessionService.CloseUserActiveSession(user);
             session = UserSessionService.CreateSession(user);
 
-            SmscHelper.SendSms(user.PhoneNumber, $"Код для входа: {session.AuthCode}");
+            _smscHelper.SendSms(user.PhoneNumber, $"Код для входа: {session.AuthCode}");
 
             return Ok(new SignInResponse
             {

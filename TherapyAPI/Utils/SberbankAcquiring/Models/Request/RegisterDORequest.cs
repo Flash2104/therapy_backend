@@ -1,5 +1,7 @@
 ﻿using BusinessLogic.Config;
 using System;
+using System.Configuration;
+
 namespace Utils.SberbankAcquiring.Models.Request
 {
     public class RegisterDORequest
@@ -12,26 +14,26 @@ namespace Utils.SberbankAcquiring.Models.Request
         public string ReturnUrl { get; set; }
         public string FailUrl { get; set; }
 
-        public RegisterDORequest(string orderNumber, long amount)
+        public RegisterDORequest(string apiUrl, string orderNumber, long amount)
         {
             OrderNumber = orderNumber;
             Amount = amount;
-            ReturnUrl = $"{AppSettings.ApiUrl}/payments/success";
-            FailUrl = $"{AppSettings.ApiUrl}/payments/fail";
+            ReturnUrl = $"{apiUrl}/payments/success";
+            FailUrl = $"{apiUrl}/payments/fail";
         }
 
-        public RegisterDORequest(string orderNumber, long amount, long sessionID)
+        public RegisterDORequest(string apiUrl, string orderNumber, long amount, long sessionID)
         {
             OrderNumber = orderNumber;
             Amount = amount;
-            ReturnUrl = $"{AppSettings.ApiUrl}/payments/success?sessionId={sessionID}";
-            FailUrl = $"{AppSettings.ApiUrl}/payments/fail?sessionId={sessionID}";
+            ReturnUrl = $"{apiUrl}/payments/success?sessionId={sessionID}";
+            FailUrl = $"{apiUrl}/payments/fail?sessionId={sessionID}";
         }
 
-        public void SetSessionID(long sessionID)
+        public void SetSessionID(string apiUrl, long sessionID)
         {
-            ReturnUrl = $"{AppSettings.ApiUrl}/payments/success?sessionId={sessionID}";
-            FailUrl = $"{AppSettings.ApiUrl}/payments/fail?sessionId={sessionID}";
+            ReturnUrl = $"{apiUrl}/payments/success?sessionId={sessionID}";
+            FailUrl = $"{apiUrl}/payments/fail?sessionId={sessionID}";
         }
     }
 }

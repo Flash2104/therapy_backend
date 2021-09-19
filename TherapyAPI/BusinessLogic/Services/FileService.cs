@@ -9,6 +9,7 @@ using Domain.Enums;
 using Domain.Models;
 using Domain.ViewModels;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Storage.Interfaces;
 
 namespace BusinessLogic.Services
@@ -16,11 +17,14 @@ namespace BusinessLogic.Services
     public class FileService : BaseCrudService<File>, IFileService
     {
         private readonly string UploadsDir = System.IO.Path.Combine("/var", "www", "www-root", "data", "www", "static.kornevaya.ru", "uploads");
+        private readonly string _staticWebUrl;
         //private readonly string UploadsDir = System.IO.Path.Combine("/Users", "user", "documents", "testfiles");
         //string private readonly dir = System.IO.Path.Combine("C:", "OpenServer", "domains", "files");
 
-        public FileService(IRepository<File> repository) : base(repository)
+        public FileService(IRepository<File> repository, IConfiguration configuration) : base(repository)
         {
+            var endpoints = configuration.GetSection("Endpoints").Get<Endpoints>();
+            _staticWebUrl = endpoints.StaticWebUrl;
         }
 
         public async Task<File> SaveFile(string base64string)
@@ -45,7 +49,7 @@ namespace BusinessLogic.Services
                 Name = filename,
                 Type = GetFileType(base64string),
                 LocalPath = path,
-                Url = $"{AppSettings.StaticWebUrl}/uploads/{now.Month}/{filename}"
+                Url = $"{_staticWebUrl}/uploads/{now.Month}/{filename}"
             };
 
             Create(file);
@@ -73,7 +77,7 @@ namespace BusinessLogic.Services
                 Name = formFile.FileName,
                 Type = GetFileType(formFile),
                 LocalPath = path,
-                Url = $"{AppSettings.StaticWebUrl}/uploads/{now.Month}/{filename}"
+                Url = $"{_staticWebUrl}/uploads/{now.Month}/{filename}"
             };
 
             Create(dbRecord);
